@@ -1,6 +1,16 @@
-import express from 'express';
-const app: express.Application = express();
-const port = 3000;
+import { logger } from "./logger";
+import server from "./server";
 
-app.get('/', (_, response) => response.send("Hello Word"));
-app.listen(port, () => console.log(`Listening on ${port}`));
+function main(): void {
+  try {
+    const s = server();
+    s.start();
+
+    process.once("SIGUSR2", () => s.stop());
+    process.once("SIGTERM", () => s.stop());
+  } catch (error) {
+    logger.error("Failed to start server", error);
+  }
+}
+
+main();

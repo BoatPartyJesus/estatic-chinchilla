@@ -1,6 +1,7 @@
 import express, { Application } from "express";
 import { Server } from "http";
 import pino from "pino-http";
+import routes from "./routes";
 import { logger } from "./logger";
 
 export type AppServer = {
@@ -19,9 +20,7 @@ function server(): AppServer {
   const port = 3000;
 
   app.use(httpLogger);
-  app.get("/", (_, response) => {
-    response.send("Hello World");
-  });
+  app.use(routes);
 
   return {
     start: () => {
@@ -29,6 +28,7 @@ function server(): AppServer {
       server = app.listen(port, () =>
         logger.info(`Server started on port: ${port}`)
       );
+      return app;
     },
     stop: () => {
       logger.info("Shutting down server.");

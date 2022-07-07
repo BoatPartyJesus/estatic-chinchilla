@@ -1,15 +1,18 @@
+import * as dotenv from 'dotenv'
+dotenv.config()
+import "reflect-metadata";
 import { logger } from "./logger";
 import server from "./server";
 
-function main(): void {
+async function main(): Promise<void> {
   try {
     const s = server();
-    s.start();
+    await s.start();
 
     process.once("SIGUSR2", () => s.stop());
     process.once("SIGTERM", () => s.stop());
   } catch (error) {
-    logger.error("Failed to start server", error);
+    logger.error(error, "Failed to start server.");
   }
 }
 

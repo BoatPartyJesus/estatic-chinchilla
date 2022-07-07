@@ -3,10 +3,11 @@ import { Server } from "http";
 import pino from "pino-http";
 import routes from "./routes";
 import { logger } from "./logger";
+import AppDataSource from "./database";
 
 export type AppServer = {
-  start: () => void;
-  stop: () => void;
+  start: () => Promise<Application>;
+  stop: () => Promise<void>;
 };
 
 function server(): AppServer {
@@ -23,20 +24,23 @@ function server(): AppServer {
   app.use(routes);
 
   return {
-    start: () => {
+    start: async () => {
       logger.info("Starting server.");
+
+      await AppDataSource.initialize();
       server = app.listen(port, () =>
         logger.info(`Server started on port: ${port}`)
       );
       return app;
     },
-    stop: () => {
+    stop: async () => {
       logger.info("Shutting down server.");
       if (!server) {
         logger.info("Server not started");
         return;
       }
 
+      await AppDataSource.destroy();
       server.close(() => {
         logger.info("Server successfully shutdown");
         process.exit(0);
